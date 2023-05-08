@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<form method="post" style="max-width: 280px; margin: 0 auto; display: flex; flex-direction: column">
+    {{- with .message }}
+    <div style="color: orangered">{{ . }}</div>
+    {{ end -}}
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" {{ with .username }}value="{{ . }}" {{ end }}required>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required>
+    <button type="submit" style="margin-top: 1em">Login</button>
+</form>
+</body>
+</html>
