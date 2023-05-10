@@ -62,17 +62,18 @@ func (s *Store) GetSession(w http.ResponseWriter, r *http.Request) *Session {
 			Timestamp: time.Now(),
 			values:    map[string]string{},
 		}
+		log.Printf("Session %s created", sessionID)
 	}
 	return s.sessions[sessionCookie.Value]
 }
 
-func (s *Store) CollectGarbage() {
-	log.Print("CollectGarbage()")
+func (s *Store) DeleteExpiredSessions() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	for sessionID, session := range s.sessions {
 		if time.Now().Sub(session.Timestamp) > s.Timeout {
 			delete(s.sessions, sessionID)
+			log.Printf("Session %s deleted", sessionID)
 		}
 	}
 }

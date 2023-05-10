@@ -10,6 +10,7 @@ import (
 
 func requireBasicAuth(next http.Handler, htpasswd *htpasswd.Htpasswd) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s", r.Method, r.URL)
 		if usrname, pwdhash, auth := r.BasicAuth(); auth {
 			if err := htpasswd.Verify(usrname, pwdhash); err != nil {
 				log.Print(err)

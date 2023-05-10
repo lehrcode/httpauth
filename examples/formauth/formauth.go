@@ -75,8 +75,8 @@ func main() {
 
 	sessionStore := sessions.NewStore("SESSIONID", 5*time.Minute)
 	go func() {
-		for range time.Tick(5 * time.Minute) {
-			sessionStore.CollectGarbage()
+		for range time.Tick(10 * time.Second) {
+			sessionStore.DeleteExpiredSessions()
 		}
 	}()
 

@@ -2,6 +2,8 @@ package htpasswd
 
 import (
 	"bufio"
+	"crypto/sha1"
+	"encoding/base64"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"io"
@@ -10,18 +12,36 @@ import (
 )
 
 var (
-	ErrUnsupportedHash = errors.New("unsupported hash")
-	ErrUserNotFound    = errors.New("user not found")
+	ErrUnsupportedHash       = errors.New("unsupported hash")
+	ErrUserNotFound          = errors.New("user not found")
+	ErrPasswordHashMissmatch = errors.New("not the hash of the given password")
 )
+
+const shaPrefix = "{SHA}"
+
+func CompareBase64Sha1HashAndPassword(hashedPassword string, password string) error {
+	var base64hash = strings.TrimPrefix(hashedPassword, shaPrefix)
+	var hash = make([]byte, 20)
+	if _, err := base64.StdEncoding.Decode(hash, []byte(base64hash)); err != nil {
+		return err
+	}
+	if [20]byte(hash) == sha1.Sum([]byte(password)) {
+		return nil
+	} else {
+		return ErrPasswordHashMissmatch
+	}
+}
 
 type Htpasswd struct {
 	Users map[string]string
 }
 
-func (h Htpasswd) Verify(usrname, passwd string) error {
-	if pwdhash, found := h.Users[strings.ToLower(strings.TrimSpace(usrname))]; found {
+func (h Htpasswd) Verify(username, password string) error {
+	if pwdhash, found := h.Users[strings.ToLower(strings.TrimSpace(username))]; found {
 		if strings.HasPrefix(pwdhash, "$2") {
-			return bcrypt.CompareHashAndPassword([]byte(pwdhash), []byte(passwd))
+			return bcrypt.CompareHashAndPassword([]byte(pwdhash), []byte(password))
+		} else if strings.HasPrefix(pwdhash, shaPrefix) {
+			return CompareBase64Sha1HashAndPassword(pwdhash, password)
 		} else {
 			return ErrUnsupportedHash
 		}
